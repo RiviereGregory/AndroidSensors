@@ -2,20 +2,27 @@ package gri.riverjach.theendormap
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority
 import timber.log.Timber
 
 private const val REQUEST_PERMISSION_LOCATION_LAST_LOCATION = 1
+private const val REQUEST_CHECK_SETTING = 1
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +44,44 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             Timber.i("Last location $location")
         }
+
+        createLocationRequest()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            REQUEST_CHECK_SETTING -> startLocationUpdate()
+        }
+    }
+
+
+    private fun createLocationRequest() {
+        locationRequest = LocationRequest
+            .Builder(1000)
+            .setMinUpdateIntervalMillis(5000)
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build()
+
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+        val client = LocationServices.getSettingsClient(this)
+
+        val task = client.checkLocationSettings(builder.build())
+        task.addOnSuccessListener { _ ->
+            Timber.i("location settings satisfied. Init location request here")
+            startLocationUpdate()
+        }
+
+        task.addOnFailureListener { exception ->
+            Timber.e(exception, "Failed to modify Location settings.")
+            if (exception is ResolvableApiException) {
+                exception.startResolutionForResult(this, REQUEST_CHECK_SETTING)
+            }
+        }
+    }
+
+    private fun startLocationUpdate() {
+        Timber.i("StartLocationUpdate")
     }
 
     private fun checkLocationPermission(): Boolean {
