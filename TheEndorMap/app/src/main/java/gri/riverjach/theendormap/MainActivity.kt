@@ -7,14 +7,23 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import timber.log.Timber
 
 private const val REQUEST_PERMISSION_LOCATION_LAST_LOCATION = 1
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // récupération de la position a aprtir du provider disponible GPS, WIFI ,...
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
         updateLastLocation()
 
     }
@@ -25,7 +34,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // CODE UPDATE LAST LOCATION
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            Timber.i("Last location $location")
+        }
     }
 
     private fun checkLocationPermission(): Boolean {
