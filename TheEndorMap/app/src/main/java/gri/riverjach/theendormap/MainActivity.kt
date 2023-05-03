@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -18,7 +19,6 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import timber.log.Timber
 
-private const val REQUEST_PERMISSION_LOCATION_LAST_LOCATION = 1
 private const val REQUEST_PERMISSION_LOCATION_START_UPDATE = 2
 private const val REQUEST_CHECK_SETTING = 1
 
@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var locationLiveData: LocationLiveData
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -41,20 +43,29 @@ class MainActivity : AppCompatActivity() {
         // récupération de la position a aprtir du provider disponible GPS, WIFI ,...
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        updateLastLocation()
-        createLocationRequest()
+        locationLiveData = LocationLiveData(this)
+        locationLiveData.observe(this, Observer { handleLocationData(it!!) })
+
+        //createLocationRequest()
 
     }
 
-    private fun updateLastLocation() {
-        Timber.d("updateLocation")
-        if (!checkLocationPermission(REQUEST_PERMISSION_LOCATION_LAST_LOCATION)) {
+    private fun handleLocationData(locationData: LocationData) {
+        if (handleLocationException(locationData.exception)) {
             return
         }
+        Timber.i("Last location from LIVEDATA $locationData.location")
+    }
 
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            Timber.i("Last location $location")
+    private fun handleLocationException(exception: Exception?): Boolean {
+        exception ?: return false
+        Timber.e(exception, "handleLocationException")
+        when (exception) {
+            is SecurityException -> checkLocationPermission(
+                REQUEST_PERMISSION_LOCATION_START_UPDATE
+            )
         }
+        return true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -124,7 +135,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         when (requestCode) {
-            REQUEST_PERMISSION_LOCATION_LAST_LOCATION -> updateLastLocation()
             REQUEST_PERMISSION_LOCATION_START_UPDATE -> startLocationUpdate()
         }
     }
