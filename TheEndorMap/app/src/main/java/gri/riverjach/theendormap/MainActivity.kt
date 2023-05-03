@@ -10,19 +10,29 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import timber.log.Timber
 
 private const val REQUEST_PERMISSION_LOCATION_LAST_LOCATION = 1
+private const val REQUEST_PERMISSION_LOCATION_START_UPDATE = 2
 private const val REQUEST_CHECK_SETTING = 1
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            for (location in locationResult.locations) {
+                Timber.d("location update $location")
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,20 +42,19 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         updateLastLocation()
+        createLocationRequest()
 
     }
 
     private fun updateLastLocation() {
         Timber.d("updateLocation")
-        if (!checkLocationPermission()) {
+        if (!checkLocationPermission(REQUEST_PERMISSION_LOCATION_LAST_LOCATION)) {
             return
         }
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             Timber.i("Last location $location")
         }
-
-        createLocationRequest()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -82,16 +91,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun startLocationUpdate() {
         Timber.i("StartLocationUpdate")
+
+        if (!checkLocationPermission(REQUEST_PERMISSION_LOCATION_START_UPDATE)) {
+            return
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
-    private fun checkLocationPermission(): Boolean {
+    private fun checkLocationPermission(requestCode: Int): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_PERMISSION_LOCATION_LAST_LOCATION
+                requestCode
             )
             return false
         }
@@ -110,6 +125,7 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
             REQUEST_PERMISSION_LOCATION_LAST_LOCATION -> updateLastLocation()
+            REQUEST_PERMISSION_LOCATION_START_UPDATE -> startLocationUpdate()
         }
     }
 }
