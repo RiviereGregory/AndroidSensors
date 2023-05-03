@@ -10,13 +10,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.Priority
 import timber.log.Timber
 
 private const val REQUEST_PERMISSION_LOCATION_START_UPDATE = 2
@@ -24,24 +17,11 @@ private const val REQUEST_CHECK_SETTING = 1
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationRequest: LocationRequest
-    private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            for (location in locationResult.locations) {
-                Timber.d("location update $location")
-            }
-        }
-    }
-
     private lateinit var locationLiveData: LocationLiveData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // récupération de la position a aprtir du provider disponible GPS, WIFI ,...
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
@@ -64,6 +44,11 @@ class MainActivity : AppCompatActivity() {
             is SecurityException -> checkLocationPermission(
                 REQUEST_PERMISSION_LOCATION_START_UPDATE
             )
+
+            is ResolvableApiException -> exception.startResolutionForResult(
+                this,
+                REQUEST_CHECK_SETTING
+            )
         }
         return true
     }
@@ -71,43 +56,8 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            REQUEST_CHECK_SETTING -> startLocationUpdate()
+            REQUEST_CHECK_SETTING -> locationLiveData.startRequestLocation()
         }
-    }
-
-
-    private fun createLocationRequest() {
-        locationRequest = LocationRequest
-            .Builder(1000)
-            .setMinUpdateIntervalMillis(5000)
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .build()
-
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val client = LocationServices.getSettingsClient(this)
-
-        val task = client.checkLocationSettings(builder.build())
-        task.addOnSuccessListener { _ ->
-            Timber.i("location settings satisfied. Init location request here")
-            startLocationUpdate()
-        }
-
-        task.addOnFailureListener { exception ->
-            Timber.e(exception, "Failed to modify Location settings.")
-            if (exception is ResolvableApiException) {
-                exception.startResolutionForResult(this, REQUEST_CHECK_SETTING)
-            }
-        }
-    }
-
-    private fun startLocationUpdate() {
-        Timber.i("StartLocationUpdate")
-
-        if (!checkLocationPermission(REQUEST_PERMISSION_LOCATION_START_UPDATE)) {
-            return
-        }
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
     private fun checkLocationPermission(requestCode: Int): Boolean {
@@ -135,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         when (requestCode) {
-            REQUEST_PERMISSION_LOCATION_START_UPDATE -> startLocationUpdate()
+            REQUEST_PERMISSION_LOCATION_START_UPDATE -> locationLiveData.startRequestLocation()
         }
     }
 }
