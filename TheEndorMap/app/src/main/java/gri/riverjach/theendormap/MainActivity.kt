@@ -9,8 +9,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.preference.PreferenceManager
 import com.google.android.gms.common.api.ResolvableApiException
+import org.osmdroid.api.IMapController
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 import timber.log.Timber
+
 
 private const val REQUEST_PERMISSION_LOCATION_START_UPDATE = 2
 private const val REQUEST_CHECK_SETTING = 1
@@ -18,6 +25,8 @@ private const val REQUEST_CHECK_SETTING = 1
 class MainActivity : AppCompatActivity() {
 
     private lateinit var locationLiveData: LocationLiveData
+    private lateinit var myOpenMapView: MapView
+    private lateinit var mapController: IMapController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +34,25 @@ class MainActivity : AppCompatActivity() {
 
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
+
+        //load/initialize the osmdroid configuration
+        Configuration.getInstance().load(
+            applicationContext,
+            PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        )
+
+        myOpenMapView = findViewById(R.id.mapView)
+        myOpenMapView.setTileSource(TileSourceFactory.MAPNIK) // render
+        myOpenMapView.setBuiltInZoomControls(true)
+        myOpenMapView.setMultiTouchControls(true)
+        myOpenMapView.setClickable(true)
+
+
+        var startPoint = GeoPoint(43.40, 5.366)
+        mapController = myOpenMapView.controller
+        mapController.setCenter(startPoint)
+        mapController.setZoom(15.0)
+
 
         //createLocationRequest()
 
@@ -34,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         if (handleLocationException(locationData.exception)) {
             return
         }
-        Timber.i("Last location from LIVEDATA $locationData.location")
+        //Timber.i("Last location from LIVEDATA $locationData.location")
     }
 
     private fun handleLocationException(exception: Exception?): Boolean {
