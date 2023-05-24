@@ -16,6 +16,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.TilesOverlay
 import timber.log.Timber
 
 
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         myOpenMapView = findViewById(R.id.mapView)
+        myOpenMapView.getOverlayManager().getTilesOverlay()
+            .setColorFilter(TilesOverlay.INVERT_COLORS)
         myOpenMapView.setTileSource(TileSourceFactory.MAPNIK) // render
         myOpenMapView.setBuiltInZoomControls(true)
         myOpenMapView.setMultiTouchControls(true)
