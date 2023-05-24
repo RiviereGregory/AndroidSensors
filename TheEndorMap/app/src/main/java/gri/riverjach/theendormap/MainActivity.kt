@@ -16,6 +16,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.TilesOverlay
 import timber.log.Timber
 
@@ -55,6 +56,17 @@ class MainActivity : AppCompatActivity() {
         mapController = myOpenMapView.controller
         mapController.setCenter(startPoint)
         mapController.setZoom(15.0)
+
+        val tec = Marker(myOpenMapView)
+        val userPoi = generateUserPoi(startPoint.latitude, startPoint.longitude)
+        tec.position = GeoPoint(userPoi.latitude, userPoi.longitude)
+        tec.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        tec.icon = resources.getDrawable(userPoi.iconId)
+        tec.title = userPoi.title
+        tec.image = resources.getDrawable(userPoi.imageId)
+        myOpenMapView.overlays.add(tec)
+
+        myOpenMapView.invalidate()
 
 
         //createLocationRequest()
