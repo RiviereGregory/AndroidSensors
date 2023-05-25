@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.google.android.gms.common.api.ResolvableApiException
 import org.osmdroid.api.IMapController
@@ -26,9 +27,12 @@ private const val REQUEST_CHECK_SETTING = 1
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var viewModel: MapViewModel
     private lateinit var locationLiveData: LocationLiveData
     private lateinit var myOpenMapView: MapView
     private lateinit var mapController: IMapController
+
+    private var firstLocation = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,9 @@ class MainActivity : AppCompatActivity() {
 
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
+
+        viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
+        viewModel.getUiState().observe(this, Observer { updateUiState(it!!) })
 
         //load/initialize the osmdroid configuration
         Configuration.getInstance().load(
@@ -73,11 +80,28 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun updateUiState(state: MapUiState) {
+        Timber.i("$state")
+        return when (state) {
+            is MapUiState.Error -> {}
+
+            MapUiState.Loading -> {}
+
+            is MapUiState.PoiReady -> {}
+        }
+    }
+
     private fun handleLocationData(locationData: LocationData) {
         if (handleLocationException(locationData.exception)) {
             return
         }
         //Timber.i("Last location from LIVEDATA $locationData.location")
+        locationData.location?.let {
+            if (firstLocation) {
+                firstLocation = false
+                viewModel.loadPois(it.latitude, it.longitude)
+            }
+        }
     }
 
     private fun handleLocationException(exception: Exception?): Boolean {
