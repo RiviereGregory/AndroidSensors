@@ -5,9 +5,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.widget.ContentLoadingProgressBar
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationLiveData: LocationLiveData
     private lateinit var myOpenMapView: MapView
     private lateinit var mapController: IMapController
+    private lateinit var progressBar: ContentLoadingProgressBar
 
     private var firstLocation = true
 
@@ -43,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
         viewModel.getUiState().observe(this, Observer { updateUiState(it!!) })
+        progressBar = findViewById(R.id.loadingProgressBar)
 
         //load/initialize the osmdroid configuration
         Configuration.getInstance().load(
@@ -83,11 +87,26 @@ class MainActivity : AppCompatActivity() {
     private fun updateUiState(state: MapUiState) {
         Timber.i("$state")
         return when (state) {
-            is MapUiState.Error -> {}
+            is MapUiState.Error -> {
+                progressBar.hide()
+                Toast.makeText(this, "Error: ${state.erroMessage}", Toast.LENGTH_SHORT).show()
+            }
 
-            MapUiState.Loading -> {}
+            MapUiState.Loading -> {
+                progressBar.show()
+            }
 
-            is MapUiState.PoiReady -> {}
+            is MapUiState.PoiReady -> {
+                progressBar.hide()
+
+                state.userPoi?.let {
+
+                }
+                state.pois?.let {
+
+                }
+                return
+            }
         }
     }
 
