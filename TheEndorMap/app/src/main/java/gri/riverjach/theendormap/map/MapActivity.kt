@@ -17,6 +17,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import gri.riverjach.theendormap.R
 import gri.riverjach.theendormap.location.LocationData
 import gri.riverjach.theendormap.location.LocationLiveData
+import gri.riverjach.theendormap.poi.Poi
 import gri.riverjach.theendormap.poi.generateUserPoi
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
@@ -66,24 +67,19 @@ class MapActivity : AppCompatActivity() {
         myOpenMapView.setMultiTouchControls(true)
         myOpenMapView.setClickable(true)
 
-
-        var startPoint = GeoPoint(43.40, 5.366)
         mapController = myOpenMapView.controller
 
+    }
+
+    private fun addPoiToMapMarker(poi: Poi): Marker {
         val tec = Marker(myOpenMapView)
-        val userPoi = generateUserPoi(startPoint.latitude, startPoint.longitude)
+        val userPoi = generateUserPoi(poi.latitude, poi.longitude)
         tec.position = GeoPoint(userPoi.latitude, userPoi.longitude)
         tec.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         tec.icon = resources.getDrawable(userPoi.iconId)
         tec.title = userPoi.title
         tec.image = resources.getDrawable(userPoi.imageId)
-        myOpenMapView.overlays.add(tec)
-
-        myOpenMapView.invalidate()
-
-
-        //createLocationRequest()
-
+        return tec
     }
 
     private fun updateUiState(state: MapUiState) {
@@ -102,7 +98,8 @@ class MapActivity : AppCompatActivity() {
                 progressBar.hide()
 
                 state.userPoi?.let {
-
+                    myOpenMapView.overlays.add(addPoiToMapMarker(it))
+                    myOpenMapView.invalidate()
                 }
                 state.pois?.let {
 
