@@ -1,8 +1,11 @@
-package gri.riverjach.theendormap
+package gri.riverjach.theendormap.map
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import gri.riverjach.theendormap.poi.Poi
+import gri.riverjach.theendormap.poi.generatePois
+import gri.riverjach.theendormap.poi.generateUserPoi
 import timber.log.Timber
 
 sealed class MapUiState {

@@ -1,6 +1,7 @@
-package gri.riverjach.theendormap
+package gri.riverjach.theendormap.poi
 
 import android.graphics.Color
+import gri.riverjach.theendormap.R
 
 const val GREY_HAVENS = "Grey Havens"
 const val HOBBITON = "Hobbiton"

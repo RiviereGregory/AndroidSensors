@@ -1,4 +1,4 @@
-package gri.riverjach.theendormap
+package gri.riverjach.theendormap.map
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -14,6 +14,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.google.android.gms.common.api.ResolvableApiException
+import gri.riverjach.theendormap.R
+import gri.riverjach.theendormap.location.LocationData
+import gri.riverjach.theendormap.location.LocationLiveData
+import gri.riverjach.theendormap.poi.generateUserPoi
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -27,7 +31,7 @@ import timber.log.Timber
 private const val REQUEST_PERMISSION_LOCATION_START_UPDATE = 2
 private const val REQUEST_CHECK_SETTING = 1
 
-class MainActivity : AppCompatActivity() {
+class MapActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MapViewModel
     private lateinit var locationLiveData: LocationLiveData

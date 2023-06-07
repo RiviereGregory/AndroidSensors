@@ -25,7 +25,7 @@
         android:theme="@style/Theme.TheEndorMap"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".map.MapActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

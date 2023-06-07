@@ -1,4 +1,4 @@
-package gri.riverjach.theendormap
+package gri.riverjach.theendormap.poi
 
 /**
  * iconId and iconColor are mutually exclusive.
