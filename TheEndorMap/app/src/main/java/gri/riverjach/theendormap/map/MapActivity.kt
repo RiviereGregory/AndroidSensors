@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -18,7 +19,6 @@ import gri.riverjach.theendormap.R
 import gri.riverjach.theendormap.location.LocationData
 import gri.riverjach.theendormap.location.LocationLiveData
 import gri.riverjach.theendormap.poi.Poi
-import gri.riverjach.theendormap.poi.generateUserPoi
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -73,12 +73,22 @@ class MapActivity : AppCompatActivity() {
 
     private fun addPoiToMapMarker(poi: Poi): Marker {
         val tec = Marker(myOpenMapView)
-        val userPoi = generateUserPoi(poi.latitude, poi.longitude)
-        tec.position = GeoPoint(userPoi.latitude, userPoi.longitude)
+        tec.position = GeoPoint(poi.latitude, poi.longitude)
         tec.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        tec.icon = resources.getDrawable(userPoi.iconId)
-        tec.title = userPoi.title
-        tec.image = resources.getDrawable(userPoi.imageId)
+        if (poi.iconId > 0) {
+            tec.icon = resources.getDrawable(poi.iconId, null)
+        } else if (poi.iconColor != 0) {
+            tec.icon = when (poi.iconColor) {
+                Color.BLUE -> resources.getDrawable(R.drawable.marker_blue, null)
+                Color.YELLOW -> resources.getDrawable(R.drawable.marker_yellow, null)
+                Color.GREEN -> resources.getDrawable(R.drawable.marker_green, null)
+                Color.RED -> resources.getDrawable(R.drawable.marker_red, null)
+
+                else -> resources.getDrawable(R.drawable.marker_red, null)
+            }
+        }
+        tec.title = poi.title
+        tec.image = resources.getDrawable(poi.imageId, null)
         return tec
     }
 
@@ -101,8 +111,11 @@ class MapActivity : AppCompatActivity() {
                     myOpenMapView.overlays.add(addPoiToMapMarker(it))
                     myOpenMapView.invalidate()
                 }
-                state.pois?.let {
-
+                state.pois?.let { pois ->
+                    pois.stream().forEach { poi ->
+                        myOpenMapView.overlays.add(addPoiToMapMarker(poi))
+                        myOpenMapView.invalidate()
+                    }
                 }
                 return
             }
@@ -113,7 +126,7 @@ class MapActivity : AppCompatActivity() {
         if (handleLocationException(locationData.exception)) {
             return
         }
-        //Timber.i("Last location from LIVEDATA $locationData.location")
+
         locationData.location?.let {
             if (firstLocation && ::mapController.isInitialized) {
                 Timber.d("location handle ${it.latitude}, ${it.longitude}")
