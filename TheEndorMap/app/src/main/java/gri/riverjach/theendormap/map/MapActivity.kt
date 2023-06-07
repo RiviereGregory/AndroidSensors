@@ -69,8 +69,6 @@ class MapActivity : AppCompatActivity() {
 
         var startPoint = GeoPoint(43.40, 5.366)
         mapController = myOpenMapView.controller
-        mapController.setCenter(startPoint)
-        mapController.setZoom(15.0)
 
         val tec = Marker(myOpenMapView)
         val userPoi = generateUserPoi(startPoint.latitude, startPoint.longitude)
@@ -120,7 +118,10 @@ class MapActivity : AppCompatActivity() {
         }
         //Timber.i("Last location from LIVEDATA $locationData.location")
         locationData.location?.let {
-            if (firstLocation) {
+            if (firstLocation && ::mapController.isInitialized) {
+                Timber.d("location handle ${it.latitude}, ${it.longitude}")
+                mapController.setCenter(GeoPoint(it.latitude, it.longitude))
+                mapController.setZoom(8.0)
                 firstLocation = false
                 viewModel.loadPois(it.latitude, it.longitude)
             }
