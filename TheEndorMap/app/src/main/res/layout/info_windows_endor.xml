@@ -46,7 +46,7 @@
         app:layout_constraintVertical_bias="0.0"
         tools:text="Because of its cultural and spiritual importance to the Elves, the Grey Havens in time became the primary Elven settlement west of the Misty Mountains prior to the establishment of Eregion and, later, Rivendell." />
 
-    <TextView
+    <Button
         android:id="@+id/urlTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

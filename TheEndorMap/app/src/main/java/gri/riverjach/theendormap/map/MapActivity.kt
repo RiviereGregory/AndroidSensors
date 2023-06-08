@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -74,29 +73,21 @@ class MapActivity : AppCompatActivity() {
         mapController = myOpenMapView.controller
         endorInfoWindowAdapter =
             EndorInfoWindowAdapter(R.layout.info_windows_endor, myOpenMapView)
-
-        endorInfoWindowAdapter.view.setOnTouchListener { _, e ->
-            if (e.action == MotionEvent.ACTION_UP) {
-                showPoiDetail()
-                endorInfoWindowAdapter.close()
-            }
-            true
+        endorInfoWindowAdapter.buttonUrl.setOnClickListener {
+            showPoiDetail()
         }
 
     }
 
     private fun showPoiDetail() {
-        val overlays = myOpenMapView.overlays
-        for (over in overlays) {
-            if (over is Marker && over.isInfoWindowShown) {
-                if (over.snippet.isBlank()) {
-                    return
-                }
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(over.snippet))
-                startActivity(intent)
-            }
+        if (endorInfoWindowAdapter.buttonUrl.text.isBlank()) {
+            return
         }
+        val intent =
+            Intent(Intent.ACTION_VIEW, Uri.parse(endorInfoWindowAdapter.buttonUrl.text.toString()))
+        startActivity(intent)
     }
+
 
     private fun addPoiToMapMarker(poi: Poi): Marker {
         val tec = Marker(myOpenMapView)

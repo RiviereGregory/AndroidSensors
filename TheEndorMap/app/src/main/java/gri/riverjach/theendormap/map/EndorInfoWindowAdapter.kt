@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.text.HtmlCompat
@@ -20,6 +21,7 @@ class EndorInfoWindowAdapter @SuppressLint("ClickableViewAccessibility") constru
 ) : MarkerInfoWindow(layoutResId, mapView) {
 
 
+    lateinit var buttonUrl: Button
     val UNDEFINED_RES_ID = 0
 
     var mTitleId = UNDEFINED_RES_ID
@@ -51,6 +53,7 @@ class EndorInfoWindowAdapter @SuppressLint("ClickableViewAccessibility") constru
 
         mDescriptionId =
             context.resources.getIdentifier("id/urlTextView", null, packageName)
+        buttonUrl = mView.findViewById<View>(mDescriptionId /*R.id.description*/) as Button
         mImageId = context.resources.getIdentifier("id/imageView", null, packageName)
         if (mTitleId == UNDEFINED_RES_ID || mDescriptionId == UNDEFINED_RES_ID || mSubDescriptionId == UNDEFINED_RES_ID || mImageId == UNDEFINED_RES_ID) {
             Timber.e(
@@ -74,8 +77,8 @@ class EndorInfoWindowAdapter @SuppressLint("ClickableViewAccessibility") constru
         snippet = overlay.snippet
         if (snippet == null) snippet = ""
         val snippetHtml = HtmlCompat.fromHtml(snippet, HtmlCompat.FROM_HTML_MODE_LEGACY)
-        (mView.findViewById<View>(mDescriptionId /*R.id.description*/) as TextView).text =
-            snippetHtml
+
+        buttonUrl.text = snippetHtml
 
 
         //handle sub-description, hidding or showing the text view:
