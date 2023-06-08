@@ -39,6 +39,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var myOpenMapView: MapView
     private lateinit var mapController: IMapController
     private lateinit var progressBar: ContentLoadingProgressBar
+    private lateinit var userMarker: Marker
 
     private var firstLocation = true
 
@@ -107,8 +108,9 @@ class MapActivity : AppCompatActivity() {
             is MapUiState.PoiReady -> {
                 progressBar.hide()
 
-                state.userPoi?.let {
-                    myOpenMapView.overlays.add(addPoiToMapMarker(it))
+                state.userPoi?.let { poi ->
+                    userMarker = addPoiToMapMarker(poi)
+                    myOpenMapView.overlays.add(userMarker)
                     myOpenMapView.invalidate()
                 }
                 state.pois?.let { pois ->
@@ -128,12 +130,17 @@ class MapActivity : AppCompatActivity() {
         }
 
         locationData.location?.let {
+            val geoPoint = GeoPoint(it.latitude, it.longitude)
             if (firstLocation && ::mapController.isInitialized) {
                 Timber.d("location handle ${it.latitude}, ${it.longitude}")
-                mapController.setCenter(GeoPoint(it.latitude, it.longitude))
+                mapController.setCenter(geoPoint)
                 mapController.setZoom(8.0)
                 firstLocation = false
                 viewModel.loadPois(it.latitude, it.longitude)
+            }
+            if (::userMarker.isInitialized) {
+                userMarker.position = geoPoint
+                myOpenMapView.invalidate()
             }
         }
     }
