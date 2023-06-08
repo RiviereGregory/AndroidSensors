@@ -40,6 +40,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var mapController: IMapController
     private lateinit var progressBar: ContentLoadingProgressBar
     private lateinit var userMarker: Marker
+    private lateinit var endorInfoWindowAdapter: EndorInfoWindowAdapter
 
     private var firstLocation = true
 
@@ -69,6 +70,8 @@ class MapActivity : AppCompatActivity() {
         myOpenMapView.setClickable(true)
 
         mapController = myOpenMapView.controller
+        endorInfoWindowAdapter =
+            EndorInfoWindowAdapter(R.layout.info_windows_endor, myOpenMapView)
 
     }
 
@@ -90,6 +93,9 @@ class MapActivity : AppCompatActivity() {
         }
         tec.title = poi.title
         tec.image = resources.getDrawable(poi.imageId, null)
+        tec.snippet = poi.detailUrl
+        tec.subDescription = poi.description
+        tec.infoWindow = endorInfoWindowAdapter
         return tec
     }
 
