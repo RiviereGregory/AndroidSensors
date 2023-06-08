@@ -5,7 +5,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -44,6 +46,7 @@ class MapActivity : AppCompatActivity() {
 
     private var firstLocation = true
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -51,7 +54,7 @@ class MapActivity : AppCompatActivity() {
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
 
-        viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
+        viewModel = ViewModelProvider(this)[MapViewModel::class.java]
         viewModel.getUiState().observe(this, Observer { updateUiState(it!!) })
         progressBar = findViewById(R.id.loadingProgressBar)
 
@@ -65,7 +68,6 @@ class MapActivity : AppCompatActivity() {
         myOpenMapView.getOverlayManager().getTilesOverlay()
             .setColorFilter(TilesOverlay.INVERT_COLORS)
         myOpenMapView.setTileSource(TileSourceFactory.MAPNIK) // render
-        myOpenMapView.setBuiltInZoomControls(true)
         myOpenMapView.setMultiTouchControls(true)
         myOpenMapView.setClickable(true)
 
@@ -73,6 +75,27 @@ class MapActivity : AppCompatActivity() {
         endorInfoWindowAdapter =
             EndorInfoWindowAdapter(R.layout.info_windows_endor, myOpenMapView)
 
+        endorInfoWindowAdapter.view.setOnTouchListener { _, e ->
+            if (e.action == MotionEvent.ACTION_UP) {
+                showPoiDetail()
+                endorInfoWindowAdapter.close()
+            }
+            true
+        }
+
+    }
+
+    private fun showPoiDetail() {
+        val overlays = myOpenMapView.overlays
+        for (over in overlays) {
+            if (over is Marker && over.isInfoWindowShown) {
+                if (over.snippet.isBlank()) {
+                    return
+                }
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(over.snippet))
+                startActivity(intent)
+            }
+        }
     }
 
     private fun addPoiToMapMarker(poi: Poi): Marker {

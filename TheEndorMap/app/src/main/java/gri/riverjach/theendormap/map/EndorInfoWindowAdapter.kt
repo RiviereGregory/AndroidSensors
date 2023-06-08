@@ -3,11 +3,11 @@ package gri.riverjach.theendormap.map
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.text.Html
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.text.HtmlCompat
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.OverlayWithIW
@@ -29,12 +29,12 @@ class EndorInfoWindowAdapter @SuppressLint("ClickableViewAccessibility") constru
     var snippet = ""
 
     init {
-        if (mTitleId == UNDEFINED_RES_ID) if (mapView != null) {
+        if (mTitleId == UNDEFINED_RES_ID && mapView != null) {
             setResIds(
                 mapView.context
             )
         }
-        mView.setOnTouchListener { v, e ->
+        mView.setOnTouchListener { _, e ->
             if (e.action == MotionEvent.ACTION_UP) {
                 close()
             }
@@ -73,7 +73,7 @@ class EndorInfoWindowAdapter @SuppressLint("ClickableViewAccessibility") constru
 
         snippet = overlay.snippet
         if (snippet == null) snippet = ""
-        val snippetHtml = Html.fromHtml(snippet)
+        val snippetHtml = HtmlCompat.fromHtml(snippet, HtmlCompat.FROM_HTML_MODE_LEGACY)
         (mView.findViewById<View>(mDescriptionId /*R.id.description*/) as TextView).text =
             snippetHtml
 
@@ -82,7 +82,7 @@ class EndorInfoWindowAdapter @SuppressLint("ClickableViewAccessibility") constru
         val subDescText = mView.findViewById<View>(mSubDescriptionId) as TextView
         val subDesc = overlay.subDescription
         if (subDesc != null && "" != subDesc) {
-            subDescText.text = Html.fromHtml(subDesc)
+            subDescText.text = HtmlCompat.fromHtml(subDesc, HtmlCompat.FROM_HTML_MODE_LEGACY)
             subDescText.visibility = View.VISIBLE
         } else {
             subDescText.visibility = View.GONE
