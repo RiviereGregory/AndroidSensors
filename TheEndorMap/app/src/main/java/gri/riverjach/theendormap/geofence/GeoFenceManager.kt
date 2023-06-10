@@ -58,7 +58,7 @@ class GeoFenceManager(context: Context) {
     }
 
     private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent() // FIXME add missing GeofencingIntentService
+        val intent = Intent(appContext, GeofenceIntentService::class.java)
         PendingIntent.getService(
             appContext,
             0,
