@@ -21,12 +21,13 @@ import gri.riverjach.theendormap.location.LocationData
 import gri.riverjach.theendormap.location.LocationLiveData
 import gri.riverjach.theendormap.poi.Poi
 import org.osmdroid.api.IMapController
-import org.osmdroid.config.Configuration
+import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.TilesOverlay
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import timber.log.Timber
 
 
@@ -49,6 +50,8 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        //load/initialize the osmdroid configuration
+        getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
 
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
@@ -57,18 +60,8 @@ class MapActivity : AppCompatActivity() {
         viewModel.getUiState().observe(this, Observer { updateUiState(it!!) })
         progressBar = findViewById(R.id.loadingProgressBar)
 
-        //load/initialize the osmdroid configuration
-        Configuration.getInstance().load(
-            applicationContext,
-            PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        )
-
         myOpenMapView = findViewById(R.id.mapView)
-        myOpenMapView.getOverlayManager().getTilesOverlay()
-            .setColorFilter(TilesOverlay.INVERT_COLORS)
-        myOpenMapView.setTileSource(TileSourceFactory.MAPNIK) // render
-        myOpenMapView.setMultiTouchControls(true)
-        myOpenMapView.setClickable(true)
+        initMapViewConf()
 
         mapController = myOpenMapView.controller
         endorInfoWindowAdapter =
@@ -77,6 +70,17 @@ class MapActivity : AppCompatActivity() {
             showPoiDetail()
         }
 
+    }
+
+    private fun initMapViewConf() {
+        myOpenMapView.getOverlayManager().getTilesOverlay()
+            .setColorFilter(TilesOverlay.INVERT_COLORS)
+        myOpenMapView.setTileSource(TileSourceFactory.MAPNIK) // render
+        myOpenMapView.setMultiTouchControls(true)
+        myOpenMapView.setClickable(true)
+        val rotationGestureOverlay = RotationGestureOverlay(myOpenMapView)
+        rotationGestureOverlay.isEnabled
+        myOpenMapView.overlays.add(rotationGestureOverlay)
     }
 
     private fun showPoiDetail() {
