@@ -10,7 +10,7 @@ import com.google.android.gms.location.LocationServices
 import gri.riverjach.theendormap.poi.Poi
 import timber.log.Timber
 
-private const val GEOFENCE_ID_MORDOR = "Mordor"
+const val GEOFENCE_ID_MORDOR = "Mordor"
 
 class GeoFenceManager(context: Context) {
 

@@ -19,8 +19,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.google.android.gms.common.api.ResolvableApiException
 import gri.riverjach.theendormap.R
+import gri.riverjach.theendormap.geofence.GEOFENCE_ID_MORDOR
+import gri.riverjach.theendormap.geofence.GeoFenceManager
 import gri.riverjach.theendormap.location.LocationData
 import gri.riverjach.theendormap.location.LocationLiveData
+import gri.riverjach.theendormap.poi.MOUNT_DOOM
 import gri.riverjach.theendormap.poi.Poi
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration.getInstance
@@ -45,6 +48,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var progressBar: ContentLoadingProgressBar
     private lateinit var userMarker: Marker
     private lateinit var endorInfoWindowAdapter: EndorInfoWindowAdapter
+    private lateinit var geoFenceManager: GeoFenceManager
 
     private var firstLocation = true
 
@@ -54,6 +58,8 @@ class MapActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         //load/initialize the osmdroid configuration
         getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
+
+        geoFenceManager = GeoFenceManager(this)
 
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
@@ -143,6 +149,9 @@ class MapActivity : AppCompatActivity() {
                     pois.stream().forEach { poi ->
                         myOpenMapView.overlays.add(addPoiToMapMarker(poi))
                         myOpenMapView.invalidate()
+                        if (poi.title == MOUNT_DOOM) {
+                            geoFenceManager.createGeofence(poi, 10000.0f, GEOFENCE_ID_MORDOR)
+                        }
                     }
                 }
                 return
@@ -225,6 +234,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun refreshPoisFromCurrentLocation() {
+        geoFenceManager.removeAllGeofence()
         myOpenMapView.overlays.clear()
         viewModel.loadPois(userMarker.position.latitude, userMarker.position.longitude)
     }
