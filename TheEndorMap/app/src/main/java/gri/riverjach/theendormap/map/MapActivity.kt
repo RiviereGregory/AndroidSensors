@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -204,6 +206,27 @@ class MapActivity : AppCompatActivity() {
             return false
         }
         return true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.activity_map_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.generate_pois -> {
+                refreshPoisFromCurrentLocation()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun refreshPoisFromCurrentLocation() {
+        myOpenMapView.overlays.clear()
+        viewModel.loadPois(userMarker.position.latitude, userMarker.position.longitude)
     }
 
     @SuppressLint("MissingSuperCall")
