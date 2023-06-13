@@ -2,6 +2,7 @@ package gri.riverjach.theendormap.geofence
 
 import android.Manifest
 import android.app.IntentService
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -15,6 +16,7 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import gri.riverjach.theendormap.App
 import gri.riverjach.theendormap.R
+import gri.riverjach.theendormap.map.MapActivity
 import timber.log.Timber
 
 private const val NOTIFICATION_ID_MORDOR = 0
@@ -66,6 +68,16 @@ class GeofenceIntentService : IntentService("EndorGeofenceIntentService") {
         val bitmap = (drawable as BitmapDrawable).bitmap
         val bitmapNull: Bitmap? = null
 
+        val intent = Intent(this, MapActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
         var builder = NotificationCompat.Builder(this, App.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
@@ -76,6 +88,7 @@ class GeofenceIntentService : IntentService("EndorGeofenceIntentService") {
                     .bigPicture(bitmap)
                     .bigLargeIcon(bitmapNull)
             )
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
         if (ActivityCompat.checkSelfPermission(
