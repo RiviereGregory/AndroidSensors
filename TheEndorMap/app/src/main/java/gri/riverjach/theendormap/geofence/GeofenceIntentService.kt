@@ -1,10 +1,19 @@
 package gri.riverjach.theendormap.geofence
 
+import android.Manifest
 import android.app.IntentService
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
+import gri.riverjach.theendormap.App
+import gri.riverjach.theendormap.R
 import timber.log.Timber
+
+private const val NOTIFICATION_ID_MORDOR = 0
 
 class GeofenceIntentService : IntentService("EndorGeofenceIntentService") {
     override fun onHandleIntent(intent: Intent?) {
@@ -27,8 +36,34 @@ class GeofenceIntentService : IntentService("EndorGeofenceIntentService") {
 
         for (triggeringGeofence in geofencingEvent.triggeringGeofences!!) {
             if (triggeringGeofence.requestId == GEOFENCE_ID_MORDOR) {
-                Timber.w("ENTERING MORDOR")
+                sendMordorNotification(geofenceTransition)
             }
         }
+    }
+
+    private fun sendMordorNotification(transitionType: Int) {
+        val title: String
+        title = when (transitionType) {
+            Geofence.GEOFENCE_TRANSITION_ENTER -> {
+                "You entered the Mordor"
+            }
+
+            else -> {
+                "You left the Mordor"
+            }
+        }
+        var builder = NotificationCompat.Builder(this, App.NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setAutoCancel(true)
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID_MORDOR, builder.build())
     }
 }
