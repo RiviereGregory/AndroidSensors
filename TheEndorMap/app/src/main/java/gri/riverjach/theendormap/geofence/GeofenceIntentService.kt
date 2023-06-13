@@ -4,9 +4,13 @@ import android.Manifest
 import android.app.IntentService
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import gri.riverjach.theendormap.App
@@ -43,18 +47,35 @@ class GeofenceIntentService : IntentService("EndorGeofenceIntentService") {
 
     private fun sendMordorNotification(transitionType: Int) {
         val title: String
-        title = when (transitionType) {
+        val text: String
+        val drawable: Drawable
+
+        when (transitionType) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> {
-                "You entered the Mordor"
+                title = "You entered the Mordor"
+                text = "Be careful... Sauron is always watching.."
+                drawable = ContextCompat.getDrawable(this, R.drawable.sauroneye)!!
             }
 
             else -> {
-                "You left the Mordor"
+                title = "You left the Mordor"
+                text = "You can breath now.. But where is the One Ring?"
+                drawable = ContextCompat.getDrawable(this, R.drawable.mordorgate)!!
             }
         }
+        val bitmap = (drawable as BitmapDrawable).bitmap
+        val bitmapNull: Bitmap? = null
+
         var builder = NotificationCompat.Builder(this, App.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
+            .setContentText(text)
+            .setLargeIcon(bitmap)
+            .setStyle(
+                NotificationCompat.BigPictureStyle()
+                    .bigPicture(bitmap)
+                    .bigLargeIcon(bitmapNull)
+            )
             .setAutoCancel(true)
 
         if (ActivityCompat.checkSelfPermission(
