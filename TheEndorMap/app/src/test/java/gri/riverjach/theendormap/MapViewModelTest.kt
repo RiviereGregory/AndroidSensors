@@ -13,6 +13,7 @@ import gri.riverjach.theendormap.poi.MORIA_GATES
 import gri.riverjach.theendormap.poi.MOUNT_DOOM
 import gri.riverjach.theendormap.poi.Poi
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -127,4 +128,19 @@ class MapViewModelTest {
         )
     }
 
+    @Test
+    fun loadPoisWithInvalidCoordinatesError() {
+        val viewModel = MapViewModel()
+        val observer: TestObserver<MapUiState> = viewModel.getUiState().testObserver()
+        val latitude = -91.0
+        val longitude = -181.0
+        viewModel.loadPois(latitude, longitude)
+        assertTrue(observer.observeValues[0] is MapUiState.Error)
+        assertEquals(
+            listOf(
+                MapUiState.Error("Invalid coordinate: lat=$latitude, long=$longitude")
+            ),
+            observer.observeValues
+        )
+    }
 }
