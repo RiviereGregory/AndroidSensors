@@ -25,6 +25,7 @@ import gri.riverjach.theendormap.location.LocationData
 import gri.riverjach.theendormap.location.LocationLiveData
 import gri.riverjach.theendormap.poi.MOUNT_DOOM
 import gri.riverjach.theendormap.poi.Poi
+import gri.riverjach.theendormap.poi.PoiRepositoryList
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration.getInstance
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -64,7 +65,8 @@ class MapActivity : AppCompatActivity() {
         locationLiveData = LocationLiveData(this)
         locationLiveData.observe(this, Observer { handleLocationData(it!!) })
 
-        viewModel = ViewModelProvider(this)[MapViewModel::class.java]
+        val factory = MapViewModelFactory(PoiRepositoryList())
+        viewModel = ViewModelProvider(this, factory)[MapViewModel::class.java]
         viewModel.getUiState().observe(this, Observer { updateUiState(it!!) })
         progressBar = findViewById(R.id.loadingProgressBar)
 

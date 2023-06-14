@@ -4,8 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import gri.riverjach.theendormap.poi.Poi
-import gri.riverjach.theendormap.poi.generatePois
-import gri.riverjach.theendormap.poi.generateUserPoi
+import gri.riverjach.theendormap.poi.PoiRepository
 import timber.log.Timber
 
 sealed class MapUiState {
@@ -17,7 +16,7 @@ sealed class MapUiState {
     ) : MapUiState()
 }
 
-class MapViewModel : ViewModel() {
+class MapViewModel(private val poiRepository: PoiRepository) : ViewModel() {
     private val uiState = MutableLiveData<MapUiState>()
     fun getUiState(): LiveData<MapUiState> = uiState
 
@@ -31,8 +30,8 @@ class MapViewModel : ViewModel() {
         uiState.value = MapUiState.Loading
 
         uiState.value = MapUiState.PoiReady(
-            userPoi = generateUserPoi(latitude, longitude),
-            pois = generatePois(latitude, longitude)
+            userPoi = poiRepository.getUserPoi(latitude, longitude),
+            pois = poiRepository.getPois(latitude, longitude)
         )
     }
 
