@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -32,6 +33,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
 import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import timber.log.Timber
@@ -152,13 +154,50 @@ class MapActivity : AppCompatActivity() {
                         myOpenMapView.overlays.add(addPoiToMapMarker(poi))
                         myOpenMapView.invalidate()
                         if (poi.title == MOUNT_DOOM) {
-                            geoFenceManager.createGeofence(poi, 10000.0f, GEOFENCE_ID_MORDOR)
+                            val radiusMeter = 10000.0f
+                            geoFenceManager.createGeofence(poi, radiusMeter, GEOFENCE_ID_MORDOR)
+                            drawCircle(poi, radiusMeter)
                         }
                     }
                 }
                 return
             }
         }
+    }
+
+    private fun drawCircle(poi: Poi, radiusInMeter: Float) {
+        val latitude = poi.latitude
+        val longitude = poi.longitude
+        val meridienTerre = 40074
+        val degreTotal = 360
+        val radiusInKm = radiusInMeter / 1000.0
+        val coeffLatitude = radiusInKm * degreTotal / meridienTerre
+        val coeffLongitude = coeffLatitude / Math.cos(Math.toRadians(poi.latitude))
+        Timber.i("Lat = $latitude , Long = $longitude")
+        Timber.i("coefLat = $coeffLatitude , coefLong = $coeffLongitude")
+        val geoPoints = ArrayList<GeoPoint>();
+        val polygon = Polygon();    //see note below
+        for (degre in 0..360 step 10) {
+            // Attention les cos et sin doivent être en radian
+            val geoPointTmp = GeoPoint(
+                (latitude + (coeffLatitude * Math.sin(Math.toRadians(degre.toDouble())))),
+                (longitude + (coeffLongitude * Math.cos(Math.toRadians(degre.toDouble()))))
+            )
+            geoPoints.add(
+                geoPointTmp
+            )
+        }
+        Timber.w("liste geopoint")
+        for (geopoint in geoPoints) {
+            Timber.i("lat : ${geopoint.latitude}, long : ${geopoint.longitude}")
+        }
+
+        polygon.fillPaint.style = Paint.Style.STROKE
+        polygon.strokeColor = Color.RED
+        polygon.setPoints(geoPoints);
+        myOpenMapView.overlays.add(polygon)
+        myOpenMapView.invalidate()
+
     }
 
     private fun handleLocationData(locationData: LocationData) {
