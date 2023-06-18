@@ -57,12 +57,14 @@ class GeofenceIntentService : IntentService("EndorGeofenceIntentService") {
                 title = "You entered the Mordor"
                 text = "Be careful... Sauron is always watching.."
                 drawable = ContextCompat.getDrawable(this, R.drawable.sauroneye)!!
+                GeofenceUtils.isInMordor = true
             }
 
             else -> {
                 title = "You left the Mordor"
                 text = "You can breath now.. But where is the One Ring?"
                 drawable = ContextCompat.getDrawable(this, R.drawable.mordorgate)!!
+                GeofenceUtils.isInMordor = false
             }
         }
         val bitmap = (drawable as BitmapDrawable).bitmap

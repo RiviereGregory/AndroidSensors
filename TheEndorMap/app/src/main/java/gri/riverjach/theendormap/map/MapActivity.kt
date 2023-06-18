@@ -22,6 +22,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import gri.riverjach.theendormap.R
 import gri.riverjach.theendormap.geofence.GEOFENCE_ID_MORDOR
 import gri.riverjach.theendormap.geofence.GeoFenceManager
+import gri.riverjach.theendormap.geofence.GeofenceUtils
 import gri.riverjach.theendormap.location.LocationData
 import gri.riverjach.theendormap.location.LocationLiveData
 import gri.riverjach.theendormap.poi.MOUNT_DOOM
@@ -52,6 +53,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var userMarker: Marker
     private lateinit var endorInfoWindowAdapter: EndorInfoWindowAdapter
     private lateinit var geoFenceManager: GeoFenceManager
+    private lateinit var zoneMordor: Polygon
 
     private var firstLocation = true
 
@@ -156,7 +158,10 @@ class MapActivity : AppCompatActivity() {
                         if (poi.title == MOUNT_DOOM) {
                             val radiusMeter = 10000.0f
                             geoFenceManager.createGeofence(poi, radiusMeter, GEOFENCE_ID_MORDOR)
-                            drawCircle(poi, radiusMeter)
+                            zoneMordor = drawCircle(poi, radiusMeter)
+                            zoneMordor.isEnabled = GeofenceUtils.isInMordor
+                            myOpenMapView.overlays.add(zoneMordor)
+                            myOpenMapView.invalidate()
                         }
                     }
                 }
@@ -165,7 +170,7 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun drawCircle(poi: Poi, radiusInMeter: Float) {
+    private fun drawCircle(poi: Poi, radiusInMeter: Float): Polygon {
         val latitude = poi.latitude
         val longitude = poi.longitude
         val meridienTerre = 40074
@@ -195,9 +200,7 @@ class MapActivity : AppCompatActivity() {
         polygon.fillPaint.style = Paint.Style.STROKE
         polygon.strokeColor = Color.RED
         polygon.setPoints(geoPoints);
-        myOpenMapView.overlays.add(polygon)
-        myOpenMapView.invalidate()
-
+        return polygon
     }
 
     private fun handleLocationData(locationData: LocationData) {
@@ -216,6 +219,11 @@ class MapActivity : AppCompatActivity() {
             }
             if (::userMarker.isInitialized) {
                 userMarker.position = geoPoint
+                myOpenMapView.invalidate()
+            }
+
+            if (::zoneMordor.isInitialized) {
+                zoneMordor.isEnabled = GeofenceUtils.isInMordor
                 myOpenMapView.invalidate()
             }
         }
