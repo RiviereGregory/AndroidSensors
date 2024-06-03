@@ -17,7 +17,7 @@ data class GadgetQRCode(
 ) : Gadget(), Parcelable
 
 @Parcelize
-data class GadgetNFC(
+data class GadgetNfc(
     override var id: Int = 0,
     override var dateCreated: Date = Date(),
     val url: String

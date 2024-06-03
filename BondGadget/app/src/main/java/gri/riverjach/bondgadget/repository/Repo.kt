@@ -3,6 +3,8 @@ package gri.riverjach.bondgadget.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import gri.riverjach.bondgadget.Gadget
+import gri.riverjach.bondgadget.GadgetNfc
+import gri.riverjach.bondgadget.GadgetQRCode
 import java.util.Date
 
 class Repo {
@@ -23,5 +25,18 @@ class Repo {
         gadgetId++
 
         gadgetsLiveDate.value = gadgets
+    }
+
+    fun getGadgetQRCodeById(gadgetId: Int): GadgetQRCode? {
+        return findGadgetById(gadgetId)
+    }
+
+    fun getGadGetNfcById(gadgetId: Int): GadgetNfc? {
+        return findGadgetById(gadgetId)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Gadget> findGadgetById(gadgetId: Int): T? {
+        return gadgets.find { gadget -> gadget.id == gadgetId } as T?
     }
 }
