@@ -2,4 +2,6 @@
     <string name="app_name">Bond Gadget</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="icon_image_view">icon image view</string>
+    <string name="date_created_gadget_sample">11/07/2024 15:23</string>
 </resources>
