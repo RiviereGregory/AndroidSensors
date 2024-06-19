@@ -2,6 +2,7 @@ package gri.riverjach.bondgadget.gadgetui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import gri.riverjach.bondgadget.gadgetui.list.GadgetListViewModel
 import gri.riverjach.bondgadget.repository.Repo
 
 @Suppress("UNCHECKED_CAST")

@@ -1,4 +1,4 @@
-package gri.riverjach.bondgadget.gadgetui
+package gri.riverjach.bondgadget.gadgetui.list
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import gri.riverjach.bondgadget.App
 import gri.riverjach.bondgadget.R
+import gri.riverjach.bondgadget.gadgetui.GadgetUiViewModelFactory
 
 class GadgetListFragment : Fragment() {
 
