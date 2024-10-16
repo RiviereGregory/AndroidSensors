@@ -10,15 +10,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import gri.riverjach.bondgadget.R
+import com.google.zxing.Result
+import gri.riverjach.bondgadget.databinding.FragmentQrcodeScanBinding
+import me.dm7.barcodescanner.zxing.ZXingScannerView
 import timber.log.Timber
 
-class QRCodeScanFragment : Fragment() {
+class QRCodeScanFragment : Fragment(), ZXingScannerView.ResultHandler {
+    // pour pouvoir utiliser sans faire les findById avec inflate
+    private var _binding: FragmentQrcodeScanBinding? = null
+    private val binding get() = _binding!!
 
     private val requestPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 Timber.i("permission granted")
+                startCamera()
             } else {
                 Timber.i("permission denied")
                 findNavController().popBackStack()
@@ -29,15 +35,41 @@ class QRCodeScanFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_qrcode_scan, container, false)
+        _binding = FragmentQrcodeScanBinding.inflate(inflater, container, false)
+        val view = binding.root
+        return view
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        binding.qrCodeView.setResultHandler(this)
     }
 
     override fun onResume() {
         super.onResume()
         if (!hasCameraPermission()) {
             requestPermission.launch(Manifest.permission.CAMERA)
+        } else {
+            startCamera()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopCamera()
+    }
+
+    private fun stopCamera() {
+        binding.qrCodeView.stopCamera()
+    }
+
+    private fun startCamera() {
+        binding.qrCodeView.startCamera()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun hasCameraPermission() =
@@ -45,5 +77,9 @@ class QRCodeScanFragment : Fragment() {
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+
+    override fun handleResult(rawResult: Result) {
+        Timber.i("QRCode ${rawResult.text}")
+    }
 
 }
