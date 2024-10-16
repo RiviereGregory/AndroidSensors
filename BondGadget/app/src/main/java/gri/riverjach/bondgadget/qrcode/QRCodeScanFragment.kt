@@ -6,14 +6,25 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import gri.riverjach.bondgadget.R
-
-private const val PERMISSION_REQUEST_CAMERA = 1
+import timber.log.Timber
 
 class QRCodeScanFragment : Fragment() {
+
+    private val requestPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                Timber.i("permission granted")
+            } else {
+                Timber.i("permission denied")
+                findNavController().popBackStack()
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -25,7 +36,7 @@ class QRCodeScanFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (!hasCameraPermission()) {
-            requestCameraPermission()
+            requestPermission.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -35,21 +46,4 @@ class QRCodeScanFragment : Fragment() {
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
 
-    private fun requestCameraPermission() {
-        requestPermissions(arrayOf(Manifest.permission.CAMERA), PERMISSION_REQUEST_CAMERA)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            PERMISSION_REQUEST_CAMERA -> if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
-                findNavController().popBackStack()
-            }
-        }
-    }
 }
