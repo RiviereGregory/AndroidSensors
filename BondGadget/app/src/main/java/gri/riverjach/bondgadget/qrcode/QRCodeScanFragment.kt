@@ -9,14 +9,22 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.google.zxing.Result
+import gri.riverjach.bondgadget.App
 import gri.riverjach.bondgadget.BuildConfig
+import gri.riverjach.bondgadget.GadgetQRCode
 import gri.riverjach.bondgadget.databinding.FragmentQrcodeScanBinding
+import gri.riverjach.bondgadget.gadgetui.GadgetUiViewModelFactory
+import gri.riverjach.bondgadget.gadgetui.list.GadgetListViewModel
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 import timber.log.Timber
 
 class QRCodeScanFragment : Fragment(), ZXingScannerView.ResultHandler {
+
+    private lateinit var viewModel: GadgetListViewModel
+
     // pour pouvoir utiliser sans faire les findById avec inflate
     private var _binding: FragmentQrcodeScanBinding? = null
     private val binding get() = _binding!!
@@ -44,6 +52,10 @@ class QRCodeScanFragment : Fragment(), ZXingScannerView.ResultHandler {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         binding.qrCodeView.setResultHandler(this)
+        var factory = GadgetUiViewModelFactory(App.repo)
+        viewModel =
+            ViewModelProviders.of(requireActivity(), factory)[GadgetListViewModel::class.java]
+
         if (BuildConfig.QRCODE_SIMULATOR_ENALED) {
             notifyScan("http://qrCode")
         }
@@ -87,9 +99,10 @@ class QRCodeScanFragment : Fragment(), ZXingScannerView.ResultHandler {
         notifyScan(rawResult.text)
     }
 
-    fun notifyScan(text: String) {
+    private fun notifyScan(text: String) {
         // TODO: Add Gadget
         Timber.i("QRCode ${text}")
+        viewModel.addGadget(GadgetQRCode(url = text))
         findNavController().popBackStack()
     }
 }

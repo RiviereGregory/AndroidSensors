@@ -50,8 +50,8 @@ class GadgetListFragment : Fragment(), GadgetListAdapter.GadgetListAdapterListen
             ViewModelProviders.of(requireActivity(), factory)[GadgetListViewModel::class.java]
         viewModel.getViewState().observe(viewLifecycleOwner, Observer { updateUi(it!!) })
 
-        viewModel.addGadget(GadgetQRCode(url ="http://qrCode"))
-        viewModel.addGadget(GadgetNfc(url ="http://nfc"))
+        //      viewModel.addGadget(GadgetQRCode(url ="http://qrCode"))
+        //      viewModel.addGadget(GadgetNfc(url ="http://nfc"))
     }
 
     private fun updateUi(state: GadgetListViewState) {
