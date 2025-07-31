@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.zxing.Result
+import gri.riverjach.bondgadget.BuildConfig
 import gri.riverjach.bondgadget.databinding.FragmentQrcodeScanBinding
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 import timber.log.Timber
@@ -43,6 +44,9 @@ class QRCodeScanFragment : Fragment(), ZXingScannerView.ResultHandler {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         binding.qrCodeView.setResultHandler(this)
+        if (BuildConfig.QRCODE_SIMULATOR_ENALED) {
+            notifyScan("http://qrCode")
+        }
     }
 
     override fun onResume() {
@@ -80,6 +84,12 @@ class QRCodeScanFragment : Fragment(), ZXingScannerView.ResultHandler {
 
     override fun handleResult(rawResult: Result) {
         Timber.i("QRCode ${rawResult.text}")
+        notifyScan(rawResult.text)
     }
 
+    fun notifyScan(text: String) {
+        // TODO: Add Gadget
+        Timber.i("QRCode ${text}")
+        findNavController().popBackStack()
+    }
 }

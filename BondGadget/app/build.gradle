@@ -23,9 +23,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "Boolean", "QRCODE_SIMULATOR_ENALED", 'true'
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField "Boolean", "QRCODE_SIMULATOR_ENALED", 'false'
         }
     }
     compileOptions {
@@ -39,6 +45,7 @@ android {
         compose true
         // Pour avoir l'équivalent des synthetics
         viewBinding = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.4.6'
